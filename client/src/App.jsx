@@ -82,30 +82,6 @@ function AppRoutes() {
         }
       />
       <Route
-        path="/inspections"
-        element={
-          <PrivateRoute roles={["owner", "dispatcher"]}>
-            <Inspections />
-          </PrivateRoute>
-        }
-      />
-      <Route
-        path="/inspections/:id"
-        element={
-          <PrivateRoute roles={["owner", "dispatcher"]}>
-            <InspectionDetail />
-          </PrivateRoute>
-        }
-      />
-      <Route
-        path="/reconciliation"
-        element={
-          <PrivateRoute roles={["owner", "dispatcher"]}>
-            <Reconciliation />
-          </PrivateRoute>
-        }
-      />
-      <Route
         path="/gate"
         element={
           <PrivateRoute roles={["security"]}>
@@ -142,6 +118,30 @@ function AppRoutes() {
         element={
           <PrivateRoute roles={["receiver"]}>
             <DeliveryLog />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/inspections"
+        element={
+          <PrivateRoute roles={["receiver"]}>
+            <Inspections />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/inspections/:id"
+        element={
+          <PrivateRoute roles={["receiver"]}>
+            <InspectionDetail />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/reconciliation"
+        element={
+          <PrivateRoute roles={["receiver"]}>
+            <Reconciliation />
           </PrivateRoute>
         }
       />

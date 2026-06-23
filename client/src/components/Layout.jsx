@@ -9,12 +9,10 @@ const OWNER_CORE_NAV = [
 
 const OWNER_REPORTS_NAV = [
   { to: "/reports", label: "Dashboard", icon: "📊", end: true },
-  { to: "/inspections", label: "Inspections", icon: "📝", end: false },
-  { to: "/reconciliation", label: "Reconciliation", icon: "💳", end: true },
   { to: "/settings", label: "Settings", icon: "⚙️", end: true },
 ];
 
-const REPORTS_ZONE_PREFIXES = ["/reports", "/inspections", "/reconciliation"];
+const REPORTS_ZONE_PREFIXES = ["/reports"];
 
 const ROLE_CONFIG = {
   owner: {
@@ -44,6 +42,8 @@ const ROLE_CONFIG = {
     navItems: [
       { to: "/delivery", label: "Incoming Deliveries", icon: "📦", end: true },
       { to: "/delivery/log", label: "Delivery Log", icon: "📋", end: true },
+      { to: "/inspections", label: "Inspections", icon: "📝", end: false },
+      { to: "/reconciliation", label: "Reconciliation", icon: "💳", end: true },
     ],
   },
 };

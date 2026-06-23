@@ -15,7 +15,7 @@ const TRANSITIONS = {
   "Draft->Cancelled": ["owner", "dispatcher"],
   "In Transit->Delivered": ["receiver"],
   "In Transit->Disputed": ["receiver"],
-  "Delivered->Paid": ["owner", "dispatcher"],
+  "Delivered->Paid": ["receiver"],
   "Delivered->Disputed": ["owner", "dispatcher"],
   "Disputed->In Transit": ["owner", "dispatcher"],
   "Disputed->Delivered": ["owner", "dispatcher"],
@@ -440,12 +440,18 @@ router.patch("/:id/status", (req, res) => {
     });
   }
 
+  const RECEIVER_NOTE_BY_STATUS = {
+    Delivered: "Delivery confirmed",
+    Disputed: "Delivery disputed",
+    Paid: "Payment received",
+  };
+
   const resolvedNote =
     note ||
     (req.user?.role === "security"
       ? `Gate-out verified by ${req.user.name}`
       : req.user?.role === "receiver"
-        ? `Delivery ${status === "Delivered" ? "confirmed" : "disputed"} by ${req.user.name}`
+        ? `${RECEIVER_NOTE_BY_STATUS[status] || status} by ${req.user.name}`
         : null);
 
   withTransaction(() => {

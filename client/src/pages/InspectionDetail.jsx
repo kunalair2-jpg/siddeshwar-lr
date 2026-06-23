@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { api } from "../lib/api";
-import OfficeHeader from "../components/OfficeHeader";
 
 export default function InspectionDetail() {
   const { id } = useParams();
@@ -30,9 +29,7 @@ export default function InspectionDetail() {
   const isDisputed = deliveryLog?.status === "Disputed";
 
   return (
-    <div className="flex-1 flex flex-col">
-      <OfficeHeader />
-      <div className="p-lg md:p-xxl space-y-xl max-w-5xl">
+    <div className="p-lg md:p-xxl space-y-xl max-w-5xl">
         <button onClick={() => navigate("/inspections")} className="text-sm text-primary hover:underline">
           ← Back to Inspections
         </button>
@@ -51,7 +48,7 @@ export default function InspectionDetail() {
             </div>
             <h1 className="text-3xl font-semibold text-ink-secondary">Delivery Verification</h1>
             <p className="text-on-surface-variant text-sm mt-xs">
-              Receiving record for {lr.lr_no} (read-only — recorded by the receiving warehouse)
+              Your inspection record for {lr.lr_no} (read-only history of what you recorded)
             </p>
           </div>
         </header>
@@ -165,7 +162,6 @@ export default function InspectionDetail() {
             </div>
           </section>
         </div>
-      </div>
     </div>
   );
 }

@@ -28,9 +28,9 @@ npm run dev   # http://localhost:5173
 
 Open http://localhost:5173 and sign in with one of three roles (toggle on the login screen):
 
-- **Office Staff:** Employee ID `EMP-4920` / password `dispatch123` — dashboard, LR creation, fleet, settings.
+- **Office Staff:** Employee ID `EMP-4920` / password `dispatch123` — Dashboard, History (LR list), Settings, plus a "Reports" view (Live Arrivals board).
 - **Security Checker:** Employee ID `SEC-1001` / password `gate123` — Gate Control + Departure Log.
-- **Receiver:** Employee ID `REC-2001` / password `receive123` — Incoming Deliveries + Delivery Log.
+- **Receiver:** Employee ID `REC-2001` / password `receive123` — Incoming Deliveries, Delivery Log, Inspections (your own past verifications), and Reconciliation (Payment & Finance Tracking).
 
 The SQLite database is created at `server/data/erp.sqlite3` on first run, seeded with demo
 vehicles and clients (no LRs — create your own from the dashboard).
@@ -47,6 +47,9 @@ the LR operator deliberately excluded from self-approving:
   `/delivery` — either a quick "Mark Delivered"/"Report Issue" action, or "Inspect" first to
   record received quantity and condition per goods line item (visible afterward on the
   dispatcher's LR detail page).
+- **Delivered → Paid** (payment receipt): also **Receiver**-only, from `/reconciliation`'s "Pay"
+  button — continuing the same "operator excluded from self-approving" pattern. Office can see a
+  read-only "Payments Received" summary on its own Dashboard but can't mark anything Paid itself.
 
 The full state machine (`Draft → In Transit → Delivered → Paid`, with `Disputed`/`Cancelled`
 branches) is enforced authoritatively in `server/src/routes/lrs.js`'s `TRANSITIONS` table — any
@@ -60,34 +63,38 @@ users) — is out of scope for this build.
 
 ## Office-side navigation
 
-The Office Staff role has **two distinct zones**, each with its own sidebar (the top tabs —
-Direct Dispatch / Reports / History — and header search are shared across both, since "Reports"
-is how you cross from one zone into the other):
+The Office Staff role has **two zones** within the same account, sharing top tabs (Direct
+Dispatch / Reports / History) and header search, but each with its own sidebar:
 
 **Core zone** (`/`, `/lrs`, `/lrs/new`, `/lrs/:id`, sidebar: Dashboard / History / Settings) —
-the day-to-day LR-maker's workspace:
+the day-to-day LR-maker's workspace. This is intentionally the *only* thing Office does: create
+the LR, see LR history, and see whether payments have come in (read-only) — nothing else.
 - **Dashboard** (`/`) — the original "Good morning" view: active trips/disputed/total-today
-  counters, a "Payments Received" summary (received vs. pending-past-21-days, computed from
-  client payment terms), a recent-LRs table, and the "Create New Lorry Receipt" CTA.
+  counters, a "Payments Received" summary (received vs. pending-past-21-days, read-only), a
+  recent-LRs table, and the "Create New Lorry Receipt" CTA.
 - **History** (`/lrs`) — the full LR list with status/date/search filters.
 
-**Reports zone** (`/reports`, `/inspections*`, `/reconciliation`, sidebar: Dashboard /
-Inspections / Reconciliation / Settings) — the broader ops/oversight workspace, reached via the
-"Reports" top tab:
-- **Dashboard** (`/reports`, sidebar label is "Dashboard" here too — matches the mockup, but
-  it's a different page than the core zone's `/`) — the "Live Arrivals" board: 4 metric cards
-  (In-Transit Total, Expected Today, Delayed, Delivered Today), status pills, and a filterable
-  arrivals table. "Delayed" and the ETA/On-Time/Late labels are a heuristic from `lr_date` vs.
-  today, since no ETA/expected-transit-time field is modeled.
-- **Inspections** — read-only list + per-LR detail of what the Receiver recorded (received qty,
-  condition per item, confirmation note). Office can view but not edit/approve here — that
-  stays Receiver-only, per the access-control design above.
-- **Reconciliation ("Payment & Finance Tracking")** — receivables/overdue computed live from
-  existing LR `amount` + the matched client's `payment_terms_days` (no new schema). **"Pay" is
-  real** — it calls the same `Delivered → Paid` transition already in `TRANSITIONS`. **"Hold" is
-  visual-only** — a local toggle that isn't persisted, by explicit choice (this was scoped as
-  "visual only for now" rather than building a real hold/release workflow).
+**Reports zone** (`/reports`, sidebar: Dashboard / Settings) — reached via the "Reports" top
+tab: the "Live Arrivals" board (4 metric cards, status pills, a filterable arrivals table).
+"Delayed" and the ETA/On-Time/Late labels are a heuristic from `lr_date` vs. today, since no
+ETA/expected-transit-time field is modeled.
 
-`Settings` is shared and appears in both sidebars. The zone shown is decided purely by current
-route in `client/src/components/Layout.jsx` — there's no separate login/role for "reports zone,"
-it's still the same Office Staff account.
+## Receiver-side navigation
+
+The Receiver role (consignee/warehouse) owns the back half of the LR lifecycle — confirming
+delivery *and* confirming payment — exclusively. Sidebar: Incoming Deliveries / Delivery Log /
+Inspections / Reconciliation.
+- **Incoming Deliveries** (`/delivery`) — In-Transit LRs awaiting confirmation: a quick "Mark
+  Delivered"/"Report Issue" action, or "Inspect" first to record received quantity and condition
+  per goods line item.
+- **Delivery Log** (`/delivery/log`) — history of confirmed/disputed deliveries.
+- **Inspections** (`/inspections`) — your own past delivery-verification records (read-only,
+  separate from the live action screen above).
+- **Reconciliation** ("Payment & Finance Tracking", `/reconciliation`) — receivables/overdue
+  computed live from existing LR `amount` + the matched client's `payment_terms_days` (no new
+  schema). **"Pay" is real** — it calls `Delivered → Paid` in `TRANSITIONS`, restricted to
+  Receiver same as the delivery checkpoints. **"Hold" is visual-only** — a local toggle that
+  isn't persisted, by explicit choice.
+
+These (Inspections, Reconciliation) used to live on the Office side; they were moved to be
+Receiver-exclusive on request, so Office never sees or approves its own deliveries/payments.

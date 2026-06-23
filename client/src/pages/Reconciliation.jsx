@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { api } from "../lib/api";
-import OfficeHeader from "../components/OfficeHeader";
 
 const STATUS_STYLE = {
   Overdue: "bg-error-container text-on-error-container",
@@ -42,9 +41,7 @@ export default function Reconciliation() {
   }
 
   return (
-    <div className="flex-1 flex flex-col">
-      <OfficeHeader />
-      <div className="p-lg md:p-xxl space-y-xl">
+    <div className="p-lg md:p-xxl space-y-xl">
         <header className="flex justify-between items-start flex-wrap gap-md">
           <div>
             <h1 className="text-3xl font-semibold text-ink-secondary">Payment & Finance Tracking</h1>
@@ -139,7 +136,6 @@ export default function Reconciliation() {
           "Pay" marks the LR Paid for real. "Hold" is a local view-only toggle for now — it isn't
           persisted, so it resets if you reload.
         </p>
-      </div>
     </div>
   );
 }

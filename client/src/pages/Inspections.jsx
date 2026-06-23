@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { api } from "../lib/api";
-import OfficeHeader from "../components/OfficeHeader";
 
 export default function Inspections() {
   const navigate = useNavigate();
@@ -19,13 +18,11 @@ export default function Inspections() {
   const totalPages = Math.max(1, Math.ceil(result.total / result.pageSize));
 
   return (
-    <div className="flex-1 flex flex-col">
-      <OfficeHeader />
-      <div className="p-lg md:p-xxl space-y-xl">
+    <div className="p-lg md:p-xxl space-y-xl">
         <header>
           <h1 className="text-3xl font-semibold text-ink-secondary">Inspections</h1>
           <p className="text-on-surface-variant text-sm mt-xs">
-            Delivery verifications recorded by the receiving warehouse.
+            Your delivery verification history — past confirmations and disputes.
           </p>
         </header>
 
@@ -115,7 +112,6 @@ export default function Inspections() {
             </div>
           </div>
         </section>
-      </div>
     </div>
   );
 }
