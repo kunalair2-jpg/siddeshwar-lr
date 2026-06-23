@@ -60,16 +60,22 @@ users) — is out of scope for this build.
 
 ## Office-side navigation
 
-The Office Staff role's shell matches a "Logistics Command" style layout: top tabs (Direct
-Dispatch → new LR, Reports → Live Arrivals, History → full LR list/filters) plus header search,
-and a sidebar of Dashboard / Inspections / Reconciliation / Settings. **Dashboard and Reports
-are two separate pages, not the same page under two names** — that distinction matters:
+The Office Staff role has **two distinct zones**, each with its own sidebar (the top tabs —
+Direct Dispatch / Reports / History — and header search are shared across both, since "Reports"
+is how you cross from one zone into the other):
 
-- **Dashboard** (sidebar, `/`) — the original LR-maker's "Good morning" view: active
-  trips/disputed/total-today counters and a recent-LRs table, with the "Create New Lorry
-  Receipt" CTA front and center. This is the day-to-day page a dispatcher lives in while
-  creating LRs.
-- **Reports** (top tab, `/reports`) — the broader "Live Arrivals" board: 4 metric cards
+**Core zone** (`/`, `/lrs`, `/lrs/new`, `/lrs/:id`, sidebar: Dashboard / History / Settings) —
+the day-to-day LR-maker's workspace:
+- **Dashboard** (`/`) — the original "Good morning" view: active trips/disputed/total-today
+  counters, a "Payments Received" summary (received vs. pending-past-21-days, computed from
+  client payment terms), a recent-LRs table, and the "Create New Lorry Receipt" CTA.
+- **History** (`/lrs`) — the full LR list with status/date/search filters.
+
+**Reports zone** (`/reports`, `/inspections*`, `/reconciliation`, sidebar: Dashboard /
+Inspections / Reconciliation / Settings) — the broader ops/oversight workspace, reached via the
+"Reports" top tab:
+- **Dashboard** (`/reports`, sidebar label is "Dashboard" here too — matches the mockup, but
+  it's a different page than the core zone's `/`) — the "Live Arrivals" board: 4 metric cards
   (In-Transit Total, Expected Today, Delayed, Delivered Today), status pills, and a filterable
   arrivals table. "Delayed" and the ETA/On-Time/Late labels are a heuristic from `lr_date` vs.
   today, since no ETA/expected-transit-time field is modeled.
@@ -81,3 +87,7 @@ are two separate pages, not the same page under two names** — that distinction
   real** — it calls the same `Delivered → Paid` transition already in `TRANSITIONS`. **"Hold" is
   visual-only** — a local toggle that isn't persisted, by explicit choice (this was scoped as
   "visual only for now" rather than building a real hold/release workflow).
+
+`Settings` is shared and appears in both sidebars. The zone shown is decided purely by current
+route in `client/src/components/Layout.jsx` — there's no separate login/role for "reports zone,"
+it's still the same Office Staff account.

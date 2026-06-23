@@ -9,6 +9,7 @@ export default function Dashboard() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [summary, setSummary] = useState(null);
+  const [payments, setPayments] = useState(null);
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -16,7 +17,14 @@ export default function Dashboard() {
       .summary()
       .then(setSummary)
       .catch((err) => setError(err.message));
+    api.lrs
+      .reconciliationSummary()
+      .then(setPayments)
+      .catch(() => {});
   }, []);
+
+  const receivedCount = payments?.rows.filter((r) => r.settlementStatus === "Paid").length ?? 0;
+  const pendingAfter21 = payments?.rows.filter((r) => r.settlementStatus === "Overdue") ?? [];
 
   return (
     <div className="flex-1 flex flex-col">
@@ -64,6 +72,34 @@ export default function Dashboard() {
             hint={`${summary?.drafts ?? 0} drafts pending`}
             tone="neutral"
           />
+        </section>
+
+        <section className="bg-surface rounded-xl border border-hairline p-lg">
+          <div className="flex justify-between items-center mb-md">
+            <h3 className="text-lg text-ink-secondary font-semibold">Payments Received</h3>
+            <button
+              onClick={() => navigate("/reconciliation")}
+              className="text-sm text-primary hover:text-primary-press underline underline-offset-4 font-medium"
+            >
+              Full Reconciliation
+            </button>
+          </div>
+          <div className="grid grid-cols-2 gap-md">
+            <div className="rounded-lg bg-emerald-600/10 px-lg py-md">
+              <p className="text-xs text-emerald-700 uppercase tracking-wider font-semibold">Received</p>
+              <p className="text-2xl font-semibold text-emerald-700 mt-xs">{receivedCount}</p>
+              <p className="text-xs text-emerald-700/70 mt-xs">Paid within terms</p>
+            </div>
+            <div className="rounded-lg bg-error-container/60 px-lg py-md">
+              <p className="text-xs text-ruby uppercase tracking-wider font-semibold">Pending after 21 days</p>
+              <p className="text-2xl font-semibold text-ruby mt-xs">{pendingAfter21.length}</p>
+              <p className="text-xs text-ruby/80 mt-xs">
+                {pendingAfter21.length
+                  ? `₹${pendingAfter21.reduce((sum, r) => sum + r.amount, 0).toLocaleString("en-IN")} overdue`
+                  : "None overdue"}
+              </p>
+            </div>
+          </div>
         </section>
 
         <section className="bg-surface rounded-xl border border-hairline overflow-hidden flex flex-col">

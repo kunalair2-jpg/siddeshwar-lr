@@ -1,5 +1,20 @@
-import { NavLink, useNavigate } from "react-router-dom";
+import { NavLink, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../lib/AuthContext";
+
+const OWNER_CORE_NAV = [
+  { to: "/", label: "Dashboard", icon: "📊", end: true },
+  { to: "/lrs", label: "History", icon: "🚚", end: false },
+  { to: "/settings", label: "Settings", icon: "⚙️", end: true },
+];
+
+const OWNER_REPORTS_NAV = [
+  { to: "/reports", label: "Dashboard", icon: "📊", end: true },
+  { to: "/inspections", label: "Inspections", icon: "📝", end: false },
+  { to: "/reconciliation", label: "Reconciliation", icon: "💳", end: true },
+  { to: "/settings", label: "Settings", icon: "⚙️", end: true },
+];
+
+const REPORTS_ZONE_PREFIXES = ["/reports", "/inspections", "/reconciliation"];
 
 const ROLE_CONFIG = {
   owner: {
@@ -8,12 +23,6 @@ const ROLE_CONFIG = {
     subtitle: "Logistics ERP",
     showQuickEntry: true,
     showActiveShift: false,
-    navItems: [
-      { to: "/", label: "Dashboard", icon: "📊", end: true },
-      { to: "/inspections", label: "Inspections", icon: "📝", end: false },
-      { to: "/reconciliation", label: "Reconciliation", icon: "💳", end: true },
-      { to: "/settings", label: "Settings", icon: "⚙️", end: true },
-    ],
   },
   security: {
     icon: "🛡",
@@ -43,7 +52,12 @@ ROLE_CONFIG.dispatcher = ROLE_CONFIG.owner;
 export default function Layout({ children }) {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const config = ROLE_CONFIG[user?.role] || ROLE_CONFIG.owner;
+
+  const isOwner = user?.role === "owner" || user?.role === "dispatcher";
+  const inReportsZone = REPORTS_ZONE_PREFIXES.some((p) => location.pathname.startsWith(p));
+  const navItems = isOwner ? (inReportsZone ? OWNER_REPORTS_NAV : OWNER_CORE_NAV) : config.navItems;
 
   return (
     <div className="flex h-screen overflow-hidden bg-canvas-soft font-sans">
@@ -61,7 +75,7 @@ export default function Layout({ children }) {
         </div>
 
         <ul className="flex-1 space-y-sm">
-          {config.navItems.map((item) => (
+          {navItems.map((item) => (
             <li key={item.to}>
               <NavLink
                 to={item.to}
