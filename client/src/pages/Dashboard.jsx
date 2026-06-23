@@ -5,6 +5,12 @@ import { api } from "../lib/api";
 import StatusBadge from "../components/StatusBadge";
 import OfficeHeader from "../components/OfficeHeader";
 
+function todayLocalDate() {
+  const now = new Date();
+  const offsetMs = now.getTimezoneOffset() * 60000;
+  return new Date(now.getTime() - offsetMs).toISOString().slice(0, 10);
+}
+
 export default function Dashboard() {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -25,6 +31,12 @@ export default function Dashboard() {
 
   const receivedCount = payments?.rows.filter((r) => r.settlementStatus === "Paid").length ?? 0;
   const pendingAfter21 = payments?.rows.filter((r) => r.settlementStatus === "Overdue") ?? [];
+  const outstanding = payments?.rows.filter((r) => r.settlementStatus !== "Paid") ?? [];
+
+  function daysRemaining(dueDate) {
+    const ms = new Date(dueDate) - new Date(todayLocalDate());
+    return Math.round(ms / (1000 * 60 * 60 * 24));
+  }
 
   return (
     <div className="flex-1 flex flex-col">
@@ -77,14 +89,9 @@ export default function Dashboard() {
         <section className="bg-surface rounded-xl border border-hairline p-lg">
           <div className="flex justify-between items-center mb-md">
             <h3 className="text-lg text-ink-secondary font-semibold">Payments Received</h3>
-            <button
-              onClick={() => navigate("/reconciliation")}
-              className="text-sm text-primary hover:text-primary-press underline underline-offset-4 font-medium"
-            >
-              Full Reconciliation
-            </button>
+            <span className="text-xs text-on-surface-variant">Read-only — Receiver handles payment release</span>
           </div>
-          <div className="grid grid-cols-2 gap-md">
+          <div className="grid grid-cols-2 gap-md mb-md">
             <div className="rounded-lg bg-emerald-600/10 px-lg py-md">
               <p className="text-xs text-emerald-700 uppercase tracking-wider font-semibold">Received</p>
               <p className="text-2xl font-semibold text-emerald-700 mt-xs">{receivedCount}</p>
@@ -100,6 +107,44 @@ export default function Dashboard() {
               </p>
             </div>
           </div>
+
+          {outstanding.length > 0 && (
+            <div className="overflow-x-auto border-t border-hairline pt-md">
+              <table className="w-full text-left border-collapse text-sm">
+                <thead>
+                  <tr className="text-xs text-on-surface-variant uppercase tracking-wider">
+                    <th className="py-xs pr-md">LR No.</th>
+                    <th className="py-xs pr-md">Consignor</th>
+                    <th className="py-xs pr-md">Amount</th>
+                    <th className="py-xs pr-md">Due Date</th>
+                    <th className="py-xs pr-md">Days Remaining to Pay</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-hairline">
+                  {outstanding.map((row) => {
+                    const days = daysRemaining(row.dueDate);
+                    return (
+                      <tr key={row.id}>
+                        <td className="py-sm pr-md font-medium text-primary">#{row.lrNo}</td>
+                        <td className="py-sm pr-md text-on-surface-variant">{row.consignorName}</td>
+                        <td className="py-sm pr-md font-medium">₹{Number(row.amount).toLocaleString("en-IN")}</td>
+                        <td className="py-sm pr-md text-on-surface-variant">{row.dueDate}</td>
+                        <td className="py-sm pr-md font-semibold">
+                          {days > 0 ? (
+                            <span className="text-on-surface-variant">{days} day{days === 1 ? "" : "s"}</span>
+                          ) : days === 0 ? (
+                            <span className="text-lemon">Due today</span>
+                          ) : (
+                            <span className="text-ruby">Overdue by {Math.abs(days)} day{Math.abs(days) === 1 ? "" : "s"}</span>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
         </section>
 
         <section className="bg-surface rounded-xl border border-hairline overflow-hidden flex flex-col">
