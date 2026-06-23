@@ -3,6 +3,7 @@ import { AuthProvider, useAuth } from "./lib/AuthContext";
 import Layout from "./components/Layout";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
+import Payments from "./pages/Payments";
 import Reports from "./pages/Reports";
 import LRList from "./pages/LRList";
 import NewLR from "./pages/NewLR";
@@ -38,6 +39,14 @@ function AppRoutes() {
         element={
           <PrivateRoute roles={["owner", "dispatcher"]}>
             <Dashboard />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/payments"
+        element={
+          <PrivateRoute roles={["owner", "dispatcher"]}>
+            <Payments />
           </PrivateRoute>
         }
       />

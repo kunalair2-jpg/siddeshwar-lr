@@ -3,6 +3,7 @@ import { useAuth } from "../lib/AuthContext";
 
 const OWNER_CORE_NAV = [
   { to: "/", label: "Dashboard", icon: "📊", end: true },
+  { to: "/payments", label: "Payments", icon: "💳", end: true },
   { to: "/lrs", label: "History", icon: "🚚", end: false },
   { to: "/settings", label: "Settings", icon: "⚙️", end: true },
 ];

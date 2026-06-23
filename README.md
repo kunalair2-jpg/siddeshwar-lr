@@ -66,12 +66,20 @@ users) — is out of scope for this build.
 The Office Staff role has **two zones** within the same account, sharing top tabs (Direct
 Dispatch / Reports / History) and header search, but each with its own sidebar:
 
-**Core zone** (`/`, `/lrs`, `/lrs/new`, `/lrs/:id`, sidebar: Dashboard / History / Settings) —
-the day-to-day LR-maker's workspace. This is intentionally the *only* thing Office does: create
-the LR, see LR history, and see whether payments have come in (read-only) — nothing else.
+**Core zone** (`/`, `/payments`, `/lrs`, `/lrs/new`, `/lrs/:id`, sidebar: Dashboard / Payments /
+History / Settings) — the day-to-day LR-maker's workspace. This is intentionally the *only*
+thing Office does: create the LR, see LR history, and see whether payments have come in
+(read-only) — nothing else.
 - **Dashboard** (`/`) — the original "Good morning" view: active trips/disputed/total-today
-  counters, a "Payments Received" summary (received vs. pending-past-21-days, read-only), a
-  recent-LRs table, and the "Create New Lorry Receipt" CTA.
+  counters, a compact "Payments Received" summary (received vs. pending-past-21-days, read-only)
+  with a link into the full Payments page, a recent-LRs table, and the "Create New Lorry
+  Receipt" CTA.
+- **Payments** (`/payments`) — all delivered transportation (Delivered + Paid LRs, i.e.
+  everything actually billable; still-in-transit LRs are excluded), sorted by urgency (soonest
+  due / most overdue first), with an All/Pending/Paid filter. The "Days Remaining to Pay" column
+  reads **"Paid"** in green once settled, **"Pending"** in red once past due, or **"N days
+  remaining"** otherwise. Read-only — same as the Dashboard summary, Office can see this but
+  Receiver is the one who actually marks something Paid.
 - **History** (`/lrs`) — the full LR list with status/date/search filters.
 
 **Reports zone** (`/reports`, sidebar: Dashboard / Settings) — reached via the "Reports" top
