@@ -1,0 +1,106 @@
+import { useEffect, useState } from "react";
+import { api } from "../lib/api";
+
+export default function DepartureLog() {
+  const [page, setPage] = useState(1);
+  const [result, setResult] = useState({ data: [], total: 0, todayCount: 0, pageSize: 10 });
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    api.lrs
+      .gateLog({ page, pageSize: 10 })
+      .then(setResult)
+      .catch((err) => setError(err.message));
+  }, [page]);
+
+  const totalPages = Math.max(1, Math.ceil(result.total / result.pageSize));
+
+  return (
+    <div className="p-lg md:p-xxl space-y-xl">
+      <header>
+        <h1 className="text-3xl font-semibold text-ink-secondary">Departure Log</h1>
+      </header>
+
+      {error && <p className="text-error">{error}</p>}
+
+      <section className="bg-surface rounded-xl border border-hairline p-lg max-w-xs">
+        <p className="text-xs text-on-surface-variant uppercase tracking-wider font-semibold">
+          Total Gate-Outs Today
+        </p>
+        <div className="text-3xl font-semibold text-ink-secondary mt-xs">{result.todayCount}</div>
+      </section>
+
+      <section className="bg-surface rounded-xl border border-hairline overflow-hidden">
+        <table className="w-full text-left border-collapse text-sm">
+          <thead>
+            <tr className="bg-canvas-soft border-b border-hairline text-xs text-on-surface-variant uppercase tracking-wider">
+              <th className="px-lg py-sm">Departure Time</th>
+              <th className="px-lg py-sm">Vehicle</th>
+              <th className="px-lg py-sm">Driver</th>
+              <th className="px-lg py-sm">LR Number</th>
+              <th className="px-lg py-sm">Destination</th>
+              <th className="px-lg py-sm">Verified By</th>
+              <th className="px-lg py-sm">Status</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-hairline">
+            {result.data.length ? (
+              result.data.map((log, i) => (
+                <tr key={i}>
+                  <td className="px-lg py-sm tabular-nums">
+                    {new Date(`${log.changed_at}Z`).toLocaleString("en-IN", {
+                      dateStyle: "medium",
+                      timeStyle: "short",
+                    })}
+                  </td>
+                  <td className="px-lg py-sm font-medium">{log.vehicle_no || "—"}</td>
+                  <td className="px-lg py-sm text-on-surface-variant">{log.driver_name || "—"}</td>
+                  <td className="px-lg py-sm text-primary">#{log.lr_no}</td>
+                  <td className="px-lg py-sm text-on-surface-variant">
+                    {log.consignee_name} · {log.to_location}
+                  </td>
+                  <td className="px-lg py-sm text-on-surface-variant">{log.verified_by || "—"}</td>
+                  <td className="px-lg py-sm">
+                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold bg-secondary-container/50 text-secondary">
+                      Gate-Out Complete
+                    </span>
+                  </td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan={7} className="px-lg py-xl text-center text-on-surface-variant">
+                  No departures logged yet.
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+        <div className="flex justify-between items-center px-lg py-md border-t border-hairline text-sm text-on-surface-variant">
+          <span>
+            Showing {(page - 1) * result.pageSize + 1}–
+            {Math.min(page * result.pageSize, result.total)} of {result.total}
+          </span>
+          <div className="flex items-center gap-sm">
+            <button
+              disabled={page <= 1}
+              onClick={() => setPage((p) => p - 1)}
+              className="px-md py-xs rounded-lg border border-hairline disabled:opacity-40"
+            >
+              ‹
+            </button>
+            <span className="px-md py-xs rounded-lg bg-primary text-on-primary">{page}</span>
+            <span>of {totalPages}</span>
+            <button
+              disabled={page >= totalPages}
+              onClick={() => setPage((p) => p + 1)}
+              className="px-md py-xs rounded-lg border border-hairline disabled:opacity-40"
+            >
+              ›
+            </button>
+          </div>
+        </div>
+      </section>
+    </div>
+  );
+}

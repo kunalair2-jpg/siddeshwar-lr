@@ -1,0 +1,77 @@
+# Transport ERP — Phase 1 (+ gate & delivery checkpoints)
+
+A working implementation of Phase 1 ("Replace paper") from `Transport_ERP_System_Design.md`:
+digital Lorry Receipt creation, a fleet/LR dashboard, and vehicle/client masters — built from
+the Siddheshwer Transport mockups. Also includes logged-in (not link-based) versions of two
+Phase 2 checkpoints: security gate-out and warehouse delivery confirmation.
+
+## Stack
+
+- **server/** — Express API, Node's built-in `node:sqlite` for storage, JWT auth.
+- **client/** — React (Vite) + Tailwind, calling the API via a dev-server proxy.
+
+## Run it
+
+Two terminals:
+
+```bash
+cd server
+npm install   # first time only
+npm run dev   # http://localhost:4000
+```
+
+```bash
+cd client
+npm install   # first time only
+npm run dev   # http://localhost:5173
+```
+
+Open http://localhost:5173 and sign in with one of three roles (toggle on the login screen):
+
+- **Office Staff:** Employee ID `EMP-4920` / password `dispatch123` — dashboard, LR creation, fleet, settings.
+- **Security Checker:** Employee ID `SEC-1001` / password `gate123` — Gate Control + Departure Log.
+- **Receiver:** Employee ID `REC-2001` / password `receive123` — Incoming Deliveries + Delivery Log.
+
+The SQLite database is created at `server/data/erp.sqlite3` on first run, seeded with demo
+vehicles and clients (no LRs — create your own from the dashboard).
+
+## What's implemented vs. the full spec
+
+Phase 1 ("replace paper": LR creation/listing/status tracking, a fleet status dashboard, and
+vehicle/client masters) plus two Phase 2 checkpoints, each gated to its own login role with
+the LR operator deliberately excluded from self-approving:
+
+- **Draft → In Transit** (gate-out): only **Security** can do this. Confirmed from `/gate`
+  ("Verify & Authorize").
+- **In Transit → Delivered/Disputed** (proof of delivery): only **Receiver** can do this, from
+  `/delivery` — either a quick "Mark Delivered"/"Report Issue" action, or "Inspect" first to
+  record received quantity and condition per goods line item (visible afterward on the
+  dispatcher's LR detail page).
+
+The full state machine (`Draft → In Transit → Delivered → Paid`, with `Disputed`/`Cancelled`
+branches) is enforced authoritatively in `server/src/routes/lrs.js`'s `TRANSITIONS` table — any
+transition not explicitly listed there is rejected with 400 regardless of role, and each listed
+transition names exactly which role(s) may perform it (403 otherwise). The frontend's per-role
+buttons are just a convenience on top of that; the API is the real gate.
+
+The rest of Phase 2+ from the spec — the driver mobile app, GPS tracking, the *external*
+link/QR-based version of gate-out and POD confirmation (no login, for staff who aren't system
+users) — is out of scope for this build.
+
+## Office-side navigation
+
+The Office Staff role's shell matches a "Logistics Command" style layout: top tabs (Direct
+Dispatch → new LR, Reports → Dashboard, History → full LR list/filters) plus header search,
+and a sidebar of Dashboard / Inspections / Reconciliation / Settings.
+
+- **Dashboard ("Live Arrivals")** — 4 metric cards (In-Transit Total, Expected Today, Delayed,
+  Delivered Today) and a filterable arrivals table. "Delayed" and the ETA/On-Time/Late labels
+  are a heuristic from `lr_date` vs. today, since no ETA/expected-transit-time field is modeled.
+- **Inspections** — read-only list + per-LR detail of what the Receiver recorded (received qty,
+  condition per item, confirmation note). Office can view but not edit/approve here — that
+  stays Receiver-only, per the access-control design above.
+- **Reconciliation ("Payment & Finance Tracking")** — receivables/overdue computed live from
+  existing LR `amount` + the matched client's `payment_terms_days` (no new schema). **"Pay" is
+  real** — it calls the same `Delivered → Paid` transition already in `TRANSITIONS`. **"Hold" is
+  visual-only** — a local toggle that isn't persisted, by explicit choice (this was scoped as
+  "visual only for now" rather than building a real hold/release workflow).
