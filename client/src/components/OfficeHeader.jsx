@@ -4,7 +4,7 @@ import { useAuth } from "../lib/AuthContext";
 
 const TABS = [
   { to: "/lrs/new", label: "Direct Dispatch" },
-  { to: "/", label: "Reports" },
+  { to: "/reports", label: "Reports" },
   { to: "/lrs", label: "History" },
 ];
 

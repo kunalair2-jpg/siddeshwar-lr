@@ -61,12 +61,18 @@ users) — is out of scope for this build.
 ## Office-side navigation
 
 The Office Staff role's shell matches a "Logistics Command" style layout: top tabs (Direct
-Dispatch → new LR, Reports → Dashboard, History → full LR list/filters) plus header search,
-and a sidebar of Dashboard / Inspections / Reconciliation / Settings.
+Dispatch → new LR, Reports → Live Arrivals, History → full LR list/filters) plus header search,
+and a sidebar of Dashboard / Inspections / Reconciliation / Settings. **Dashboard and Reports
+are two separate pages, not the same page under two names** — that distinction matters:
 
-- **Dashboard ("Live Arrivals")** — 4 metric cards (In-Transit Total, Expected Today, Delayed,
-  Delivered Today) and a filterable arrivals table. "Delayed" and the ETA/On-Time/Late labels
-  are a heuristic from `lr_date` vs. today, since no ETA/expected-transit-time field is modeled.
+- **Dashboard** (sidebar, `/`) — the original LR-maker's "Good morning" view: active
+  trips/disputed/total-today counters and a recent-LRs table, with the "Create New Lorry
+  Receipt" CTA front and center. This is the day-to-day page a dispatcher lives in while
+  creating LRs.
+- **Reports** (top tab, `/reports`) — the broader "Live Arrivals" board: 4 metric cards
+  (In-Transit Total, Expected Today, Delayed, Delivered Today), status pills, and a filterable
+  arrivals table. "Delayed" and the ETA/On-Time/Late labels are a heuristic from `lr_date` vs.
+  today, since no ETA/expected-transit-time field is modeled.
 - **Inspections** — read-only list + per-LR detail of what the Receiver recorded (received qty,
   condition per item, confirmation note). Office can view but not edit/approve here — that
   stays Receiver-only, per the access-control design above.

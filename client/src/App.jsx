@@ -3,6 +3,7 @@ import { AuthProvider, useAuth } from "./lib/AuthContext";
 import Layout from "./components/Layout";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
+import Reports from "./pages/Reports";
 import LRList from "./pages/LRList";
 import NewLR from "./pages/NewLR";
 import LRDetail from "./pages/LRDetail";
@@ -37,6 +38,14 @@ function AppRoutes() {
         element={
           <PrivateRoute roles={["owner", "dispatcher"]}>
             <Dashboard />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/reports"
+        element={
+          <PrivateRoute roles={["owner", "dispatcher"]}>
+            <Reports />
           </PrivateRoute>
         }
       />
